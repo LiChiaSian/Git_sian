@@ -1,5 +1,0 @@
-# 忽略 Manim 產生的影片與圖片資料夾
-media/
-__pycache__/
-*.mp4
-.env
