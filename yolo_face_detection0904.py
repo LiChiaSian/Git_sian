@@ -16,6 +16,91 @@ class YoloIntegratedApp:
     self.root.title("YOLO 實時鏡頭 / 本機圖片辨識與手動匡列控制介面")
     self.root.geometry("1450x920")
 
+    # COCO 80 類別字典 mapping
+    self.coco_names = {
+        0: "person",
+        1: "bicycle",
+        2: "car",
+        3: "motorcycle",
+        4: "airplane",
+        5: "bus",
+        6: "train",
+        7: "truck",
+        8: "boat",
+        9: "traffic light",
+        10: "fire hydrant",
+        11: "stop sign",
+        12: "parking meter",
+        13: "bench",
+        14: "bird",
+        15: "cat",
+        16: "dog",
+        17: "horse",
+        18: "sheep",
+        19: "cow",
+        20: "elephant",
+        21: "bear",
+        22: "zebra",
+        23: "giraffe",
+        24: "backpack",
+        25: "umbrella",
+        26: "handbag",
+        27: "tie",
+        28: "suitcase",
+        29: "frisbee",
+        30: "skis",
+        31: "snowboard",
+        32: "sports ball",
+        33: "kite",
+        34: "baseball bat",
+        35: "baseball glove",
+        36: "skateboard",
+        37: "surfboard",
+        38: "tennis racket",
+        39: "bottle",
+        40: "wine glass",
+        41: "cup",
+        42: "fork",
+        43: "knife",
+        44: "spoon",
+        45: "bowl",
+        46: "banana",
+        47: "apple",
+        48: "sandwich",
+        49: "orange",
+        50: "broccoli",
+        51: "carrot",
+        52: "hot dog",
+        53: "pizza",
+        54: "donut",
+        55: "cake",
+        56: "chair",
+        57: "couch",
+        58: "potted plant",
+        59: "bed",
+        60: "dining table",
+        61: "toilet",
+        62: "tv",
+        63: "laptop",
+        64: "mouse",
+        65: "remote",
+        66: "keyboard",
+        67: "cell phone",
+        68: "microwave",
+        69: "oven",
+        70: "toaster",
+        71: "sink",
+        72: "refrigerator",
+        73: "book",
+        74: "clock",
+        75: "vase",
+        76: "scissors",
+        77: "teddy bear",
+        78: "hair drier",
+        79: "toothbrush",
+    }
+    self.selected_classes_set = set()  # 紀錄使用者自訂選擇的類別集合
+
     # 1. 初始化 YOLO 模型與狀態變數
     self.model = YOLO("yolov8n.pt")
     self.cap = None
@@ -120,7 +205,6 @@ class YoloIntegratedApp:
         font=("微軟正黑體", 10),
     ).pack(side=tk.LEFT, padx=5)
 
-    # 實時快照按鈕
     self.btn_snapshot = tk.Button(
         row1,
         text="📸 實時快照",
@@ -221,56 +305,32 @@ class YoloIntegratedApp:
         state="readonly",
     ).pack(side=tk.LEFT, padx=(0, 15))
 
-    # 列 3：類別選擇
+    # 列 3：類別選擇（升級為彈出式選擇器）
     row3 = tk.Frame(control_frame)
     row3.pack(fill=tk.X, pady=2)
 
     tk.Label(
-        row3, text="辨識與參考物勾選:", font=("微軟正黑體", 10, "bold")
+        row3, text="辨識類別選擇:", font=("微軟正黑體", 10, "bold")
     ).pack(side=tk.LEFT, padx=(5, 5))
     self.cls_all_var = tk.BooleanVar(value=True)
-    self.cls_person_var = tk.BooleanVar(value=False)
-    self.cls_car_var = tk.BooleanVar(value=False)
-    self.cls_bottle_var = tk.BooleanVar(value=False)
-    self.cls_cellphone_var = tk.BooleanVar(value=False)
 
     tk.Checkbutton(
         row3,
-        text="全部類別",
+        text="全部 80 類別",
         variable=self.cls_all_var,
         command=self.toggle_all_classes,
-        font=("微軟正黑體", 10),
-    ).pack(side=tk.LEFT, padx=4)
-    tk.Checkbutton(
-        row3,
-        text="人 (0)",
-        variable=self.cls_person_var,
-        command=self.uncheck_all_var,
-        font=("微軟正黑體", 10),
-    ).pack(side=tk.LEFT, padx=4)
-    tk.Checkbutton(
-        row3,
-        text="汽車 (2)",
-        variable=self.cls_car_var,
-        command=self.uncheck_all_var,
-        font=("微軟正黑體", 10),
-    ).pack(side=tk.LEFT, padx=4)
-    tk.Checkbutton(
-        row3,
-        text="🔍 寶特瓶 (39)",
-        variable=self.cls_bottle_var,
-        command=self.uncheck_all_var,
         font=("微軟正黑體", 10, "bold"),
-        fg="#00796B",
-    ).pack(side=tk.LEFT, padx=4)
-    tk.Checkbutton(
+    ).pack(side=tk.LEFT, padx=5)
+
+    self.btn_select_classes = tk.Button(
         row3,
-        text="🔍 手機 (67)",
-        variable=self.cls_cellphone_var,
-        command=self.uncheck_all_var,
-        font=("微軟正黑體", 10, "bold"),
-        fg="#00796B",
-    ).pack(side=tk.LEFT, padx=4)
+        text="⚙️ 選取指定類別 (已選: 全部)",
+        command=self.open_class_selector_dialog,
+        font=("微軟正黑體", 9, "bold"),
+        bg="#607D8B",
+        fg="white",
+    )
+    self.btn_select_classes.pack(side=tk.LEFT, padx=10)
 
     # 日誌區
     row_log = tk.Frame(control_frame)
@@ -312,7 +372,6 @@ class YoloIntegratedApp:
     list_frame.pack(side=tk.RIGHT, fill=tk.Y, padx=(5, 0))
     list_frame.pack_propagate(False)
 
-    # --- 新增：排序控制列 ---
     sort_frame = tk.Frame(list_frame)
     sort_frame.pack(fill=tk.X, padx=5, pady=(5, 2))
 
@@ -338,7 +397,6 @@ class YoloIntegratedApp:
     self.sort_combo.pack(side=tk.LEFT, fill=tk.X, expand=True)
     self.sort_combo.bind("<<ComboboxSelected>>", lambda e: self.sort_objects())
 
-    # 清單列表容器
     box_container = tk.Frame(list_frame)
     box_container.pack(expand=True, fill=tk.BOTH, padx=5, pady=5)
 
@@ -352,7 +410,6 @@ class YoloIntegratedApp:
     scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
     self.obj_listbox.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
 
-    # --- 新增：多元刪除按鈕區 ---
     btn_del_frame = tk.Frame(list_frame)
     btn_del_frame.pack(fill=tk.X, padx=5, pady=5)
 
@@ -388,32 +445,119 @@ class YoloIntegratedApp:
 
     self.obj_listbox.bind("<<ListboxSelect>>", self.on_list_select)
 
-  # --- 類別切換邏輯 ---
+  # --- 類別選取與彈出對話視窗邏輯 ---
   def toggle_all_classes(self):
     if self.cls_all_var.get():
-      self.cls_person_var.set(False)
-      self.cls_car_var.set(False)
-      self.cls_bottle_var.set(False)
-      self.cls_cellphone_var.set(False)
+      self.selected_classes_set.clear()
+      self.btn_select_classes.config(text="⚙️ 選取指定類別 (已選: 全部)")
+      if not self.is_running and self.last_frame is not None:
+        self.run_image_detection()
 
-  def uncheck_all_var(self):
-    self.cls_all_var.set(False)
+  def open_class_selector_dialog(self):
+    """彈出 COCO 80 個類別的勾選對話視窗"""
+    dialog = tk.Toplevel(self.root)
+    dialog.title("選取 COCO 80 種類別")
+    dialog.geometry("540x520")
+    dialog.transient(self.root)
+    dialog.grab_set()
+
+    top_frame = tk.Frame(dialog, pady=5)
+    top_frame.pack(fill=tk.X, padx=10)
+
+    def select_all_dialog():
+      for var in check_vars.values():
+        var.set(True)
+
+    def deselect_all_dialog():
+      for var in check_vars.values():
+        var.set(False)
+
+    tk.Button(top_frame, text="全選", command=select_all_dialog, width=8).pack(
+        side=tk.LEFT, padx=5
+    )
+    tk.Button(
+        top_frame, text="清空", command=deselect_all_dialog, width=8
+    ).pack(side=tk.LEFT, padx=5)
+
+    container = tk.Frame(dialog)
+    container.pack(expand=True, fill=tk.BOTH, padx=10, pady=5)
+
+    canvas = tk.Canvas(container)
+    scrollbar = tk.Scrollbar(container, orient="vertical", command=canvas.yview)
+    scroll_frame = tk.Frame(canvas)
+
+    scroll_frame.bind(
+        "<Configure>",
+        lambda e: canvas.configure(scrollregion=canvas.bbox("all")),
+    )
+    canvas.create_window((0, 0), window=scroll_frame, anchor="nw")
+    canvas.configure(yscrollcommand=scrollbar.set)
+
+    canvas.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
+    scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+    # 產生 80 個類別勾選方塊 (3 欄排列)
+    check_vars = {}
+    col, row = 0, 0
+    for cls_id, cls_name in self.coco_names.items():
+      is_checked = self.cls_all_var.get() or (
+          cls_id in self.selected_classes_set
+      )
+      var = tk.BooleanVar(value=is_checked)
+      check_vars[cls_id] = var
+
+      cb = tk.Checkbutton(
+          scroll_frame,
+          text=f"[{cls_id:02d}] {cls_name}",
+          variable=var,
+          font=("Consolas", 9),
+          anchor="w",
+      )
+      cb.grid(row=row, column=col, sticky="w", padx=8, pady=2)
+
+      col += 1
+      if col >= 3:
+        col = 0
+        row += 1
+
+    def apply_selection():
+      selected = [cls_id for cls_id, var in check_vars.items() if var.get()]
+      if len(selected) == 80 or len(selected) == 0:
+        self.cls_all_var.set(True)
+        self.selected_classes_set.clear()
+        self.btn_select_classes.config(text="⚙️ 選取指定類別 (已選: 全部)")
+      else:
+        self.cls_all_var.set(False)
+        self.selected_classes_set = set(selected)
+        self.btn_select_classes.config(
+            text=f"⚙️ 選取指定類別 (已選: {len(selected)} 項)"
+        )
+
+      self.log_message(
+          "[類別設定] 目前過濾類別數："
+          f" {len(selected) if not self.cls_all_var.get() else '全部 (80)'}"
+      )
+      dialog.destroy()
+
+      if not self.is_running and self.last_frame is not None:
+        self.run_image_detection()
+
+    btn_confirm = tk.Button(
+        dialog,
+        text="確認並套用",
+        command=apply_selection,
+        bg="#4CAF50",
+        fg="white",
+        font=("微軟正黑體", 10, "bold"),
+    )
+    btn_confirm.pack(fill=tk.X, padx=10, pady=8)
 
   def get_selected_classes(self):
-    if self.cls_all_var.get():
+    if self.cls_all_var.get() or not self.selected_classes_set:
       return None
-    selected = []
-    if self.cls_person_var.get():
-      selected.append(0)
-    if self.cls_car_var.get():
-      selected.append(2)
-    if self.cls_bottle_var.get():
-      selected.append(39)
-    if self.cls_cellphone_var.get():
-      selected.append(67)
-    return selected if selected else None
+    return list(self.selected_classes_set)
 
-  # --- 物件排序邏輯 (新功能) ---
+  # --- 物件排序邏輯 ---
   def sort_objects(self):
     if not self.current_boxes:
       return
@@ -429,7 +573,7 @@ class YoloIntegratedApp:
       self.current_boxes.sort(key=lambda x: x["area"], reverse=True)
     elif mode == "面積 Size (小->大)":
       self.current_boxes.sort(key=lambda x: x["area"])
-    else:  # 預設序號排序
+    else:
       self.current_boxes.sort(key=lambda x: x.get("original_id", x["id"]))
 
     self.selected_idx = None
@@ -437,7 +581,7 @@ class YoloIntegratedApp:
     self.update_listbox()
     self.log_message(f"[排序] 已更新列表順序 -> {mode}")
 
-  # --- 物件刪除邏輯 (擴充功能) ---
+  # --- 物件刪除邏輯 ---
   def delete_selected_item(self):
     selection = self.obj_listbox.curselection()
     if not selection:
