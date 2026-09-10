@@ -1,5 +1,6 @@
 <img width="953" height="500" alt="yoloreadme1" src="https://github.com/user-attachments/assets/d9e3fc7e-07e4-47e9-9c07-b9a264b47b4c" />
-<img width="949" height="503" alt="yoloreadme2" src="https://github.com/user-attachments/assets/18e38f9c-7958-48f2-9758-9d76c748141e" />
+<img width="949" height="503" alt="yoloreadme2" src="https://github.com/user-attachments/assets/62b8784c-f2b7-4d75-ba96-0972f169388d" />
+
 # YOLO 實時鏡頭 / 本機圖片辨識與手動匡列控制介面
 
 本專案是一個基於 **PyTkinter** 圖形介面開發的實時物件偵測與手動標註工具，整合了 **Ultralytics YOLO** 深度學習模型。除了支援網路攝影機串流實時偵測外，亦提供本機圖片檢視、圖像縮放平移、右鍵手動劃框、標註物件多重排序與刪除，以及一鍵匯出圖像與文字數據等功能。
