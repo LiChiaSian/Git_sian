@@ -49,8 +49,9 @@ Manim 引擎依賴系統的 `ffmpeg` 進行影片合成。請先確保已安裝�
 
 ```bash
 pip install manim numpy streamlit
+```
 
-執行方式
+### 3.執行方式
 下載或複製專案檔：
 確保 multiple_slit_interference.py 在您的專案目錄中。
 
