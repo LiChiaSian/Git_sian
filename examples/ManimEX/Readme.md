@@ -60,5 +60,6 @@ pip install manim numpy streamlit
 streamlit run multiple_slit_interference.py
 
 瀏覽器會自動開啟控制面板（預設為 http://localhost:8501）。
-操作模擬器：在左側側邊欄調整參數。
+操作模擬器：
+- 在左側側邊欄調整參數。
 - 點擊 ▶️ 開始渲染物理模擬影片 按鈕，等待系統生成動畫並播放或下載。
