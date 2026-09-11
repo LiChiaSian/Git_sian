@@ -1,3 +1,6 @@
+
+https://github.com/user-attachments/assets/c9656ed6-12d6-4952-b09d-b48968ac1423
+
 # 狹縫繞射與干涉 (Slit Diffraction & Interference) 模擬
 
 這是一個結合 **Streamlit** Web 互動介面與 **Manim** 數學動畫引擎的物理模擬器。使用者可以透過圖形化介面動態調整光學參數（波長、狹縫寬度等），並即時渲染出高畫質的強度分佈曲線與光斑動畫。
