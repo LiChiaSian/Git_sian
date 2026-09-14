@@ -1,1 +1,1 @@
-<img width="999" height="542" alt="未命名設計" src="https://github.com/user-attachments/assets/c4f3dce7-93c8-482a-bc00-b88dffb138fd" />
+<img width="999" height="542" alt="你的段落文字" src="https://github.com/user-attachments/assets/08fe2861-b56c-4724-a05f-d816710737db" />
