@@ -1,3 +1,8 @@
+
+
+https://github.com/user-attachments/assets/92ff0610-ea34-40fd-9553-4f586fd31cbb
+
+
 # 📐 軌跡模擬器 (Trajectory Simulator)
 
 這是一個結合 **Streamlit** 互動式 Web 介面與 **Manim** 數學動畫引擎的動態軌跡模擬器。使用者可透過控制面板調整各種極座標與參數式曲線的參數，並使用 SymPy 進行動態公式解析與即時影片渲染。
