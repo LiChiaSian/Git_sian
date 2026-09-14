@@ -1,2 +1,1 @@
-<img width="400" height="222" alt="數學軌跡模擬" src="https://github.com/user-attachments/assets/6fff85a6-e3c1-4677-a39b-a4d2810ee0a9" />
-<img width="475" height="251" alt="yoloreadme2" src="https://github.com/user-attachments/assets/62b8784c-f2b7-4d75-ba96-0972f169388d" />
+<img width="999" height="542" alt="未命名設計" src="https://github.com/user-attachments/assets/c4f3dce7-93c8-482a-bc00-b88dffb138fd" />
