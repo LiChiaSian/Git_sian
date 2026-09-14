@@ -21,7 +21,7 @@ https://github.com/user-attachments/assets/c9656ed6-12d6-4952-b09d-b48968ac1423
 
 1. **單狹縫繞射因子 ($\beta$)**：
    $$\beta = \frac{\pi b \sin\theta}{\lambda}$$
-   其中 $b$ 為狹縫寬度，$$\lambda$$ 為入射光波長。
+   其中 $b$ 為狹縫寬度，$λ$ 為入射光波長。
 
 2. **多狹縫干涉因子 ($\gamma$)**：
    $$\gamma = \frac{\pi d \sin\theta}{\lambda}$$
