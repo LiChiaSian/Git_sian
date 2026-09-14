@@ -225,51 +225,80 @@ else:
         r"I(\theta) = I_0 \left( \frac{\sin \beta}{\beta} \right)^2 \left( \frac{\sin N\gamma}{\sin \gamma} \right)^2"
     )
 
-# --- 主畫面執行按鈕 ---
-if st.button("▶️ 開始渲染物理模擬影片", type="primary"):
-    param_hash = hashlib.md5(
-        f"Slit_v3_{num_slits}_{wavelength}_{slit_width}_{slit_distance}_{color_choice}_{font_size}_{is_continuous}".encode()
-    ).hexdigest()[:8]
-    output_dir = "./media/videos/multiple_slit_interference/480p15"
-    target_video_path = f"{output_dir}/Diffraction_{param_hash}.mp4"
-    default_video_path = f"{output_dir}/DynamicSlitDiffraction.mp4"
+# --- 新建檔案/資料夾的確認彈窗 ---
+@st.dialog("⚠️ 建立檔案與資料夾確認")
+def confirm_render_dialog(cmd, env, default_path, target_path):
+    st.write("系統檢測到尚未生成此參數的動畫，將執行以下操作：")
+    st.markdown(f"""
+    * **建立目標目錄**：`{os.path.dirname(target_path)}`
+    * **渲染預設影片**：`{os.path.basename(default_path)}`
+    * **重新命名影片**：`{os.path.basename(target_path)}`
+    """)
+    st.warning("請問是否同意系統新建資料夾與寫入影片檔案？")
 
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("✅ 同意並開始渲染", type="primary"):
+            # 確保資料夾結構已被建立
+            os.makedirs(os.path.dirname(target_path), exist_ok=True)
+            
+            with st.spinner("🚀 Manim 正在計算並渲染動畫影片..."):
+                result = subprocess.run(cmd, env=env, capture_output=True, text=True)
+
+                if os.path.exists(default_path):
+                    os.rename(default_path, target_path)
+                    st.success("✨ 渲染完成！")
+                    st.rerun()  # 關閉彈窗並重新整理頁面
+                else:
+                    st.error("影片渲染失敗！詳細錯誤訊息如下：")
+                    st.code(result.stderr if result.stderr else result.stdout)
+
+    with col2:
+        if st.button("❌ 取消執行"):
+            st.rerun()
+
+# --- 主畫面執行邏輯 ---
+param_hash = hashlib.md5(
+    f"Slit_v3_{num_slits}_{wavelength}_{slit_width}_{slit_distance}_{color_choice}_{font_size}_{is_continuous}".encode()
+).hexdigest()[:8]
+output_dir = "./media/videos/multiple_slit_interference/480p15"
+target_video_path = f"{output_dir}/Diffraction_{param_hash}.mp4"
+default_video_path = f"{output_dir}/DynamicSlitDiffraction.mp4"
+
+if st.button("▶️ 開始渲染物理模擬影片", type="primary"):
     if os.path.exists(target_video_path):
         st.success("⚡ 載入快取模擬影片成功！")
         st.video(target_video_path)
     else:
-        with st.spinner("🚀 Manim 正在計算並渲染漸進變色動畫影片..."):
-            env = os.environ.copy()
-            env["WAVE_NUM_SLITS"] = str(num_slits)
-            env["WAVE_LAMBDA"] = str(wavelength)
-            env["WAVE_SLIT"] = str(slit_width)
-            env["WAVE_SLIT_D"] = str(slit_distance)
-            env["WAVE_COLOR"] = str(color_choice)
-            env["WAVE_FONT_SIZE"] = str(font_size)
-            env["WAVE_CONTINUOUS"] = str(is_continuous)
+        # 準備環境變數與指令
+        env = os.environ.copy()
+        env["WAVE_NUM_SLITS"] = str(num_slits)
+        env["WAVE_LAMBDA"] = str(wavelength)
+        env["WAVE_SLIT"] = str(slit_width)
+        env["WAVE_SLIT_D"] = str(slit_distance)
+        env["WAVE_COLOR"] = str(color_choice)
+        env["WAVE_FONT_SIZE"] = str(font_size)
+        env["WAVE_CONTINUOUS"] = str(is_continuous)
 
-            current_script = os.path.basename(__file__)
+        current_script = os.path.basename(__file__)
 
-            cmd = [
-                "python",
-                "-m",
-                "manim",
-                "-ql",
-                "--fps",
-                "15",
-                "--media_dir",
-                "./media",
-                "--disable_caching",
-                current_script,
-                "DynamicSlitDiffraction",
-            ]
+        cmd = [
+            "python",
+            "-m",
+            "manim",
+            "-ql",
+            "--fps",
+            "15",
+            "--media_dir",
+            "./media",
+            "--disable_caching",
+            current_script,
+            "DynamicSlitDiffraction",
+        ]
 
-            result = subprocess.run(cmd, env=env, capture_output=True, text=True)
+        # 呼叫彈窗詢問使用者
+        confirm_render_dialog(cmd, env, default_video_path, target_video_path)
 
-            if os.path.exists(default_video_path):
-                os.rename(default_video_path, target_video_path)
-                st.success("✨ 渲染完成！")
-                st.video(target_video_path)
-            else:
-                st.error("影片渲染失敗！詳細錯誤訊息如下：")
-                st.code(result.stderr if result.stderr else result.stdout)
+# 若快取檔已存在於畫面上，則預設呈現
+elif os.path.exists(target_video_path):
+    st.video(target_video_path)
